@@ -1,5 +1,5 @@
-import typing
 from dataclasses import dataclass
+from typing import List
 
 
 @dataclass
@@ -13,12 +13,17 @@ class InfoMessage:
     calories: float
 
     def get_message(self) -> str:
+        """Выводит данные информационного сообщения.
+
+        Returns:
+            Строка параметров информационного сообщения.
+        """
         return (
-            f"Тип тренировки: {self.training_type}; "
-            f"Длительность: {self.duration:.3f} ч.; "
-            f"Дистанция: {self.distance:.3f} км; "
-            f"Ср. скорость: {self.speed:.3f} км/ч; "
-            f"Потрачено ккал: {self.calories:.3f}."
+            f'Тип тренировки: {self.training_type}; '
+            f'Длительность: {self.duration:.3f} ч.; '
+            f'Дистанция: {self.distance:.3f} км; '
+            f'Ср. скорость: {self.speed:.3f} км/ч; '
+            f'Потрачено ккал: {self.calories:.3f}.'
         )
 
 
@@ -40,19 +45,36 @@ class Training:
         self.weight = weight
 
     def get_distance(self) -> float:
-        """Получить дистанцию в км."""
+        """Рассчитывает дистанцию.
+
+        Returns:
+            Дистанция в километрах, рассчитанная по
+            произведению количества действий и длины шага за это действие.
+        """
         return self.action * self.LEN_STEP / self.M_IN_KM
 
     def get_mean_speed(self) -> float:
-        """Получить среднюю скорость движения."""
+        """Рассчитывает среднюю скорость движения.
+        Returns:
+            Значение средней скорости движения, рассчитанное в результате
+            деления пройденной дистанции на время тренировки.
+        """
         return self.get_distance() / self.duration
 
     def get_spent_calories(self) -> float:
-        """Получить количество затраченных калорий."""
+        """Рассчитывает количество затраченных калорий.
+
+        Raises:
+        NotImplementedError: Если наследник не переопределил
+            метод получения калорий."""
         raise NotImplementedError
 
     def show_training_info(self) -> InfoMessage:
-        """Вернуть информационное сообщение о выполненной тренировке."""
+        """Формирует информационное сообщение о выполненной тренировке.
+        Returns:
+            Информационное сообщение о тренировке -
+            Объект класса InfoMessage.
+        """
         return InfoMessage(
             type(self).__name__,
             self.duration,
@@ -85,11 +107,15 @@ class SportsWalking(Training):
 
     CALORIES_WEIGHT_MULTIPLIER = 0.035
     CALORIES_SPEED_HEIGHT_MULTIPLIER = 0.029
-    KMH_IN_MSEC = 0.278  # 1000 / 3600
+    KMH_IN_MSEC = 0.278  # 1000 метров / 60 минут в секундах
     CM_IN_M = 100
 
     def __init__(
-        self, action: int, duration: float, weight: float, height: float
+        self,
+        action: int,
+        duration: float,
+        weight: float,
+        height: float,
     ) -> None:
         super().__init__(action, duration, weight)
         self.height = height
@@ -141,17 +167,30 @@ class Swimming(Training):
         )
 
 
-WORKOUT_TYPES = {"RUN": Running, "WLK": SportsWalking, "SWM": Swimming}
+WORKOUT_TYPES = {
+    'RUN': Running,
+    'WLK': SportsWalking,
+    'SWM': Swimming,
+}
 
 
-def read_package(workout_type: str, data: typing.List[int]) -> Training:
-    """Прочитать данные полученные от датчиков.
-    Args
-        data(List)
+def read_package(workout_type: str, data: List[float]) -> Training:
+    """Считывает данные полученные от датчиков.
+
+    Args:
+        data(List): [количество действий, время тренировки в часах,
+        вес пользователя, рост пользователя(опционально) или длина бассейна,
+        сколько раз пользователь переплыл бассейн (опционально)]
+
+    Returns:
+        Объект одного из трех классов тренировок, наследуемых от Training.
     """
-    if workout_type in WORKOUT_TYPES:
+    try:
         return WORKOUT_TYPES[workout_type](*data)
-    return None
+    except KeyError:
+        print('Ошибка кода тренировки в принимаемых пакетах.')
+    except TypeError:
+        print('Ошибка в данных принимаемых пакетов.')
 
 
 def main(training: Training) -> None:
@@ -159,11 +198,11 @@ def main(training: Training) -> None:
     print(training.show_training_info().get_message())
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     packages = [
-        ("SWM", [720, 1, 80, 25, 40]),
-        ("RUN", [15000, 1, 75]),
-        ("WLK", [9000, 1, 75, 180]),
+        ('SWM', [720, 1, 80, 25, 40]),
+        ('RUN', [15000, 1, 75]),
+        ('WLK', [9000, 1, 75, 180]),
     ]
 
     for workout_type, data in packages:
