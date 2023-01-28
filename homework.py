@@ -16,7 +16,7 @@ class InfoMessage:
         """Выводит данные информационного сообщения.
 
         Returns:
-            Строка параметров информационного сообщения.
+            Строку параметров информационного сообщения.
         """
         return (
             f'Тип тренировки: {self.training_type}; '
@@ -48,13 +48,14 @@ class Training:
         """Рассчитывает дистанцию.
 
         Returns:
-            Дистанция в километрах, рассчитанная по
+            Дистанцию в километрах, рассчитанную по
             произведению количества действий и длины шага за это действие.
         """
         return self.action * self.LEN_STEP / self.M_IN_KM
 
     def get_mean_speed(self) -> float:
         """Рассчитывает среднюю скорость движения.
+
         Returns:
             Значение средней скорости движения, рассчитанное в результате
             деления пройденной дистанции на время тренировки.
@@ -65,15 +66,17 @@ class Training:
         """Рассчитывает количество затраченных калорий.
 
         Raises:
-        NotImplementedError: Если наследник не переопределил
-            метод получения калорий."""
+            NotImplementedError: Если наследник не переопределил
+                метод получения калорий.
+        """
         raise NotImplementedError
 
     def show_training_info(self) -> InfoMessage:
         """Формирует информационное сообщение о выполненной тренировке.
+
         Returns:
             Информационное сообщение о тренировке -
-            Объект класса InfoMessage.
+            объект класса InfoMessage.
         """
         return InfoMessage(
             type(self).__name__,
@@ -167,6 +170,10 @@ class Swimming(Training):
         )
 
 
+class InvalidInputDataError(Exception):
+    pass
+
+
 WORKOUT_TYPES = {
     'RUN': Running,
     'WLK': SportsWalking,
@@ -178,23 +185,28 @@ def read_package(workout_type: str, data: List[float]) -> Training:
     """Считывает данные полученные от датчиков.
 
     Args:
-        data(List): [количество действий, время тренировки в часах,
-        вес пользователя, рост пользователя(опционально) или длина бассейна,
-        сколько раз пользователь переплыл бассейн (опционально)]
+        workout_type: код тренировки, представляющий собой строку из
+            из трех букв в верхнем регистре.
+        data: [количество действий, время тренировки в часах,
+            вес пользователя, рост пользователя(опционально) или
+            длина бассейна, сколько раз пользователь переплыл бассейн
+            (опционально)].
 
     Returns:
-        Объект одного из трех классов тренировок, наследуемых от Training.
+        Объект одного из трех классов тренировки, наследуемых от Training.
     """
     try:
         return WORKOUT_TYPES[workout_type](*data)
-    except KeyError:
-        print('Ошибка кода тренировки в принимаемых пакетах.')
-    except TypeError:
-        print('Ошибка в данных принимаемых пакетов.')
+    except (KeyError, TypeError) as err:
+        raise InvalidInputDataError(err)
 
 
 def main(training: Training) -> None:
-    """Главная функция."""
+    """Главная функция.
+
+    Args:
+        training: Объект одного из трех классов тренировки.
+    """
     print(training.show_training_info().get_message())
 
 
